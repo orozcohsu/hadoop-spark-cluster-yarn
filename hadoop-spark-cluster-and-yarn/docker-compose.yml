@@ -1,0 +1,127 @@
+version: "3"
+
+services:
+  namenode-master:
+    image: orozcohsu/hadoop-namenode-master:1.0.0-hadoop2.7.4-spark2.4.1
+    container_name: namenode-master
+    volumes:
+      - hadoop_namenode:/hadoop/dfs/name
+      - /etc/localtime:/etc/localtime:ro
+    expose:
+      - "9000"
+      - "7077"
+    ports:
+      - 50070:50070
+      - 8080:8080
+    environment:
+      - CLUSTER_NAME=test
+    env_file:
+      - ./hadoopsparkbase/hadoop.env
+
+  datanode:
+    image: orozcohsu/hadoop-datanode-worker:1.0.0-hadoop2.7.4-spark2.4.1
+    container_name: datanode-worker
+    volumes:
+      - hadoop_datanode:/hadoop/dfs/data
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 8081:8081
+    environment:
+      SERVICE_PRECONDITION: "namenode-master:50070"
+    env_file:
+      - ./hadoopsparkbase/hadoop.env
+
+  resourcemanager:
+    image: orozcohsu/hadoop-resourcemanager:1.0.0-hadoop2.7.4-java8
+    container_name: resourcemanager
+    restart: always
+    ports:
+      - 8088:8088
+    environment:
+      SERVICE_PRECONDITION: "namenode-master:50070 datanode:50075"
+    env_file:
+      - ./hadoopsparkbase/hadoop.env
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+
+  nodemanager:
+    image: orozcohsu/hadoop-nodemanager:1.0.0-hadoop2.7.4-java8
+    container_name: nodemanager
+    environment:
+      SERVICE_PRECONDITION: "namenode-master:50070 datanode-worker:50075 resourcemanager:8088"
+    env_file:
+      - ./hadoopsparkbase/hadoop.env
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+
+  historyserver:
+    image: orozcohsu/hadoop-historyserver:1.0.0-hadoop2.7.4-java8
+    container_name: historyserver
+    volumes:
+      - hadoop_historyserver:/hadoop/yarn/timeline
+    ports:
+      - 8188:8188
+    environment:
+      SERVICE_PRECONDITION: "namenode-master:50070 datanode-worker:50075 resourcemanager:8088"
+    env_file:
+      - ./hadoopsparkbase/hadoop.env
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+
+  hive-server:
+    image: orozcohsu/hive-server:1.0.0-hive2.3.2
+    container_name: hive-server
+    env_file:
+      - ./hivehbase/hadoop-hive.env
+    environment:
+      HIVE_CORE_CONF_javax_jdo_option_ConnectionURL: "jdbc:mysql://metadata/hive?useSSL=false"
+      SERVICE_PRECONDITION: "namenode-master:9000 datanode-worker:50075 hive-metastore:9083"
+    ports:
+      - "10000:10000"
+      - "10002:10002"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+
+  hive-metastore:
+    image: orozcohsu/hive-server:1.0.0-hive2.3.2
+    container_name: hive-metastore
+    env_file:
+      - ./hivehbase/hadoop-hive.env
+    command: /opt/hive/bin/hive --service metastore
+    depends_on:
+      - "metadata"
+    environment:
+      SERVICE_PRECONDITION: "namenode-master:9000 datanode-worker:50075"
+    ports:
+      - "9083:9083"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+
+  metadata:
+    image: mysql:5.7
+    container_name: metadata
+    restart: always
+    expose:
+      - "3306"
+    ports:
+      - "3306:3306"
+    environment:
+        MYSQL_ROOT_USER: root
+        MYSQL_ROOT_PASSWORD: 1234
+        MYSQL_DATABASE: hive
+        MYSQL_USER: hive
+        MYSQL_PASSWORD: hive
+    healthcheck:
+        test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+        timeout: 20s
+        retries: 10
+    volumes:
+      - ./mysql-init-files:/docker-entrypoint-initdb.d
+      - /etc/localtime:/etc/localtime:ro
+      - metadata:/var/lib/mysql/
+
+volumes:
+  hadoop_namenode:
+  hadoop_datanode:
+  hadoop_historyserver:
+  metadata:
