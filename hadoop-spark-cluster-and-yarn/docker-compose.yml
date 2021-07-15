@@ -13,7 +13,7 @@ services:
     ports:
       - 50070:50070
       - 8080:8080
-    environment:
+    environment: 
       - CLUSTER_NAME=test
     env_file:
       - ./hadoopsparkbase/hadoop.env
@@ -27,7 +27,7 @@ services:
     ports:
       - 8081:8081
     environment:
-      SERVICE_PRECONDITION: "namenode-master:50070"
+      SERVICE_PRECONDITION: "namenode-master:50070 namenode-master:8080"
     env_file:
       - ./hadoopsparkbase/hadoop.env
 
@@ -119,6 +119,17 @@ services:
       - ./mysql-init-files:/docker-entrypoint-initdb.d
       - /etc/localtime:/etc/localtime:ro
       - metadata:/var/lib/mysql/
+
+  driver:
+    image: orozcohsu/hadoop-driver:1.0.0-hadoop2.7.4-spark2.4.1
+    container_name: driver
+    volumes:
+      - ./data:/data
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      SERVICE_PRECONDITION: "namenode-master:50070 datanode-worker:50075 resourcemanager:8088"
+    env_file:
+      - ./hadoopsparkbase/hadoop.env
 
 volumes:
   hadoop_namenode:

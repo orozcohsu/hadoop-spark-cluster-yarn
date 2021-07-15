@@ -24,3 +24,7 @@ $SPARK_HOME/sbin/start-master.sh
 echo "Starting namenode service"
 $HADOOP_PREFIX/bin/hdfs --config $HADOOP_CONF_DIR namenode
 
+#spark.yarn.jars to hdfs
+echo "PUT spark jars"
+$HADOOP_PREFIX/bin/hadoop fs -mkdir -p /apps/spark
+$HADOOP_PREFIX/bin/hadoop fs -put /usr/local/spark/jars/spark-jars.zip  /apps/spark

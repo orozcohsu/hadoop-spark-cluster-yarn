@@ -58,6 +58,9 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
 
     # MAPRED
     addProperty /etc/hadoop/mapred-site.xml yarn.nodemanager.bind-host 0.0.0.0
+    
+    # spark
+    addProperty /usr/local/spark/conf/spark-defaults.conf spark.yarn.archive hdfs:///apps/spark/spark-jars.zip
 fi
 
 if [ -n "$GANGLIA_HOST" ]; then

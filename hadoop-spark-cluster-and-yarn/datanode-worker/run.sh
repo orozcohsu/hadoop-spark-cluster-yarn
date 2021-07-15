@@ -12,6 +12,3 @@ $SPARK_HOME/sbin/start-slave.sh spark://${SPARK_MASTER_HOST}:${SPARK_MASTER_PORT
 #Starting namenode service
 $HADOOP_PREFIX/bin/hdfs --config $HADOOP_CONF_DIR datanode
 
-#Starting spark worker
-#$SPARK_HOME/sbin/start-slaver.sh spark://${SPARK_MASTER_HOST}:${SPARK_MASTER_PORT} >> logs/spark-worker.out
- 
