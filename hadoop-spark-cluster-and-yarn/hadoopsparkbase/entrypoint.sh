@@ -31,6 +31,15 @@ function configure() {
     done
 }
 
+function addLine() {
+  local path=$1
+  local name=$2
+  local value=$3
+
+  echo "$name=$value">>$path
+}
+
+#hadoop
 configure /etc/hadoop/core-site.xml core CORE_CONF
 configure /etc/hadoop/hdfs-site.xml hdfs HDFS_CONF
 configure /etc/hadoop/yarn-site.xml yarn YARN_CONF
@@ -58,9 +67,9 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
 
     # MAPRED
     addProperty /etc/hadoop/mapred-site.xml yarn.nodemanager.bind-host 0.0.0.0
-    
-    # spark
-    addProperty /usr/local/spark/conf/spark-defaults.conf spark.yarn.archive hdfs:///apps/spark/spark-jars.zip
+
+    # SPARK
+    addLine /usr/local/spark/conf/spark.defaults.conf spark.yarn.archive hdfs:///apps/spark/spark-jars.zip 
 fi
 
 if [ -n "$GANGLIA_HOST" ]; then
