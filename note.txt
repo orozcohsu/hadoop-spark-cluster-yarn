@@ -5,9 +5,9 @@
 1-4. RUN IT AS cluster mode: ./spark-submit --class org.apache.spark.examples.SparkPi --master spark://namenode-master:7077 --deploy-mode cluster --executor-memory 1G --total-executor-cores 1 ../examples/jars/spark-examples_2.11-2.4.1.jar 1000
 1-5. CHECK 8080 and SEE APPLICATION STATUS
 
-2. Try spark yarn
+2. Try spark yarn (login into driver)
 1-1. RUN IT AS yarn(client): ./spark-submit --class org.apache.spark.examples.SparkPi --master yarn --deploy-mode client --executor-memory 1G --executor-cores 1 ../examples/jars/spark-examples_2.11-2.4.1.jar 1000
-1-2. RUN IT AS yarn(client):
+1-2. RUN IT AS yarn(client): spark-submit --master yarn --deploy-mode cluster --num-executors 1 --executor-memory 1G --executor-cores 1 --class org.apache.spark.examples.SparkPi $SPARK_HOME/examples/jars/spark-examples_2.11-2.4.1.jar
 
 
 all reference:
